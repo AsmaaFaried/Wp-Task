@@ -6,8 +6,6 @@ Description: Adding age to UserWP
 Version: 0.1
 Author: AsmaaFaried
 Author URI:
-License: GPLv2 or later
-License URI: http://www.gnu.org/licenses/gpl-2.0.html
 */
 
 
@@ -104,6 +102,50 @@ function crf_user_profile_update_errors( $errors, $update, $user ) {
 }
 
 add_action( 'edit_user_created_user', 'crf_user_register' );
+
+
+/**
+ * Back end display
+ */
+
+add_action( 'show_user_profile', 'crf_show_extra_profile_fields' );
+add_action( 'edit_user_profile', 'crf_show_extra_profile_fields' );
+
+function crf_show_extra_profile_fields( $user ) {
+	$age = get_the_author_meta( 'age', $user->ID );
+	?>
+	<h3><?php esc_html_e( 'Personal Information', 'crf' ); ?></h3>
+
+	<table class="form-table">
+		<tr>
+			<th><label for="age"><?php esc_html_e( 'Age', 'crf' ); ?></label></th>
+			<td>
+				<input type="number"
+			       id="age"
+				   min="15"
+				   step="1"
+			       name="age"
+			       value="<?php echo esc_attr( $age ); ?>"
+			       class="regular-text"
+				/>
+			</td>
+		</tr>
+	</table>
+	<?php
+}
+
+add_action( 'personal_options_update', 'crf_update_profile_fields' );
+add_action( 'edit_user_profile_update', 'crf_update_profile_fields' );
+
+function crf_update_profile_fields( $user_id ) {
+	if ( ! current_user_can( 'edit_user', $user_id ) ) {
+		return false;
+	}
+
+	if ( ! empty( $_POST['age'] ) && intval( $_POST['age'] ) >= 15 ) {
+		update_user_meta( $user_id, 'age', intval( $_POST['age'] ) );
+	}
+}
 
 
 ?>
